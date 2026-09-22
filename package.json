@@ -1,0 +1,19 @@
+{
+  "name": "cloudnee",
+  "version": "0.1.0",
+  "description": "Cognee-style memory on Cloudflare: D1 edges, Vectorize triplet ranking, and Workflows. The Markdown page stays the file a person edits.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "bench": "node bench/nine-jobs.ts"
+  },
+  "files": [
+    "src",
+    "migrations",
+    "assets/logo.png"
+  ]
+}

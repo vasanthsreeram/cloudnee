@@ -1,0 +1,10 @@
+cloudnee
+Copyright 2026 LintLabs
+
+The triplet score and the feedback average follow the formulas in Cognee
+1.6.0 (https://github.com/topoteretes/cognee), which is licensed under
+the Apache License, Version 2.0. Cloudnee is an independent
+implementation. It does not include Cognee source code.
+
+Cloudnee is not a Cloudflare product. Cloudflare, Workers, D1, R2,
+Vectorize, and Workflows are trademarks of Cloudflare, Inc.

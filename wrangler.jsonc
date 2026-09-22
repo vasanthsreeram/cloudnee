@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cloudnee",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-09-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "workflows": [
+    { "name": "cloudnee-cognify", "binding": "COGNIFY", "class_name": "CognifyWorkflow" }
+  ],
+  "d1_databases": [
+    { "binding": "DB", "database_name": "cloudnee", "database_id": "00000000-0000-0000-0000-000000000000" }
+  ],
+  "vectorize": [
+    { "binding": "ENTITY_INDEX", "index_name": "cloudnee-entity-name" },
+    { "binding": "EDGE_INDEX", "index_name": "cloudnee-edge-text" }
+  ],
+  "ai": { "binding": "AI" },
+  "r2_buckets": [
+    { "binding": "BUCKET", "bucket_name": "cloudnee-notes" }
+  ],
+  "triggers": { "crons": ["15 * * * *"] }
+}
