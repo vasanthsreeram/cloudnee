@@ -15,6 +15,53 @@ recall(query)   →  Vectorize top-K, then the triplet score, then D1 filters
 improve(edges)  →  queue a 1–5 rating; cron applies old + alpha × (rating − old)
 ```
 
+The picture version is [`docs/fit.html`](docs/fit.html).
+
+```mermaid
+flowchart LR
+  subgraph cf [Cloudflare account]
+    W[Worker]
+    R2[(R2 Markdown)]
+    D1[(D1 edges and aliases)]
+    V[(Vectorize names and edges)]
+    AI[Workers AI]
+    WF[Workflow]
+    W --> WF
+    WF --> AI
+    WF --> D1
+    WF --> V
+    WF --> R2
+    W --> D1
+  end
+  P[Cognee Python process]
+  K[(Kuzu)]
+  L[(LanceDB)]
+  P --- K
+  P --- L
+  W -. no binding .-> P
+```
+
+A known phone reads D1 and stops. An open question takes the long way, then D1 still has the last word.
+
+```mermaid
+flowchart TD
+  Q{What arrived?}
+  Q -->|phone or name| C[readCurrent]
+  C --> D1[(current D1 edges)]
+  Q -->|a question| VX[Vectorize top-K]
+  VX --> S[triplet score]
+  S --> F[drop superseded rows and private paths]
+  F --> D1b[(D1 is the filter)]
+```
+
+```mermaid
+flowchart LR
+  H[hash] -->|changed| E[extract]
+  H -->|same hash| Stop[stop]
+  E --> W[write D1]
+  W --> EM[embed Vectorize]
+```
+
 ## How a Cognee mechanism sits on Cloudflare
 
 | Cognee | cloudnee |

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cloudnee on Cloudflare</title>
+<style>
+  :root {
+    --paper: #f4efe6;
+    --sheet: #fffdf8;
+    --ink: #1c1915;
+    --muted: #5e584e;
+    --line: #e3d8c6;
+    --orange: #d06a1a;
+    --orange-deep: #8a3e0c;
+    --wash: #f8e7d4;
+    --navy: #1d3557;
+    --navy-wash: #e6eef6;
+    --ok: #1e5c3d;
+    --ok-wash: #e5f3ea;
+    --gone: #8d3129;
+    --serif: "Iowan Old Style", Palatino, Georgia, serif;
+    --sans: "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--sans);
+    background:
+      radial-gradient(880px 380px at 100% -8%, #f6d7b4 0%, transparent 55%),
+      var(--paper);
+    line-height: 1.45;
+  }
+  .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; }
+  header { padding: 36px 0 8px; display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: end; }
+  img.mark { width: min(220px, 42vw); height: auto; display: block; }
+  .eyebrow { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange-deep); font-weight: 700; }
+  h1 { font-family: var(--serif); font-weight: 560; font-size: clamp(40px, 6vw, 68px); line-height: 0.92; letter-spacing: -0.035em; margin: 0 0 12px; max-width: 14ch; }
+  .lede { margin: 0; max-width: 46ch; color: var(--muted); font-size: 18px; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; padding: 18px 0; position: sticky; top: 0; z-index: 3; background: var(--paper); }
+  nav a { text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; font-size: 14px; }
+  section { padding: 28px 0 10px; }
+  h2 { font-family: var(--serif); font-weight: 560; font-size: clamp(28px, 3.2vw, 40px); letter-spacing: -0.03em; margin: 0 0 8px; }
+  .sub { margin: 0 0 16px; color: var(--muted); max-width: 62ch; }
+  .plate { margin: 0 0 6px; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange-deep); font-weight: 700; }
+  .card { background: var(--sheet); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+  .yard { display: grid; grid-template-columns: 1.35fr 86px 0.9fr; gap: 12px; align-items: stretch; }
+  .house, .shed { border-radius: 18px; padding: 16px; }
+  .house { background: var(--navy-wash); border: 1px solid #c5d5e6; }
+  .shed { background: #f3eee6; border: 1px dashed #b7aa98; }
+  .house h3, .shed h3 { margin: 0 0 4px; font-size: 18px; }
+  .hint { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+  .bricks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .brick { background: white; border-radius: 12px; padding: 10px 12px; border: 1px solid #d5e2ef; }
+  .brick b { display: block; font-size: 14px; }
+  .brick span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .brick.wide { grid-column: 1 / -1; }
+  .gap { display: flex; align-items: center; justify-content: center; }
+  .gap span { writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px; font-weight: 700; color: var(--gone); }
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .step { background: var(--sheet); border: 1px solid var(--line); border-radius: 16px; padding: 14px; min-height: 148px; position: relative; }
+  .step .n { font-family: var(--mono); font-size: 12px; color: var(--orange-deep); font-weight: 700; }
+  .step h3 { margin: 6px 0 6px; font-size: 16px; }
+  .step p { margin: 0; color: var(--muted); font-size: 14px; }
+  .step.skip { background: var(--ok-wash); border-color: #b7d8c2; }
+  .arrowrow { display: flex; justify-content: space-between; padding: 0 8% 8px; color: var(--orange); font-size: 22px; letter-spacing: 0; }
+  .reads { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .read h3 { margin: 0 0 8px; }
+  .lane { display: flex; flex-direction: column; gap: 8px; }
+  .node { background: white; border-radius: 12px; padding: 10px 12px; border: 1px solid var(--line); }
+  .node b { display: block; }
+  .node span { color: var(--muted); font-size: 13px; }
+  .fast { border-color: #b7d8c2; background: var(--ok-wash); }
+  .slow { border-color: #efd3a8; background: var(--wash); }
+  .down { text-align: center; color: var(--muted); font-size: 18px; line-height: 1; }
+  .graph { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; align-items: center; }
+  svg { width: 100%; height: auto; display: block; }
+  .caption { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .price { font-family: var(--mono); }
+  .old { opacity: 0.55; text-decoration: line-through; }
+  table { width: 100%; border-collapse: collapse; background: var(--sheet); border-radius: 16px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+  th { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  footer { padding: 28px 0 48px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 800px) {
+    header, .yard, .steps, .reads, .graph, .pair { grid-template-columns: 1fr; }
+    .gap span { writing-mode: horizontal-tb; transform: none; }
+    .arrowrow { display: none; }
+    img.mark { justify-self: start; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Why it fits</p>
+      <h1>One account. No second disk.</h1>
+      <p class="lede">Cloudnee keeps Cognee’s five ideas and stores each one in a Cloudflare binding. The Worker never leaves the account to remember someone.</p>
+    </div>
+    <img class="mark" src="../assets/logo.png" alt="cloudnee">
+  </header>
+  <nav>
+    <a href="#account">The account</a>
+    <a href="#write">Write</a>
+    <a href="#read">Two reads</a>
+    <a href="#join">The join</a>
+    <a href="#price">Old price</a>
+  </nav>
+
+  <section id="account">
+    <p class="plate">01 · Where it lives</p>
+    <h2>The graph is rows and vectors, inside the Worker.</h2>
+    <p class="sub">Cognee’s stores sit beside Cloudflare. Cloudnee’s stores are the bindings the Worker already calls.</p>
+    <div class="yard">
+      <div class="house">
+        <h3>Cloudflare account</h3>
+        <p class="hint">The Worker calls these by binding name. No HTTP hop to a memory service.</p>
+        <div class="bricks">
+          <div class="brick"><b>R2</b><span>knowledge/{org}/{path} — the Markdown a person edits</span></div>
+          <div class="brick"><b>D1</b><span>entities, phone aliases, edges, superseded_by</span></div>
+          <div class="brick"><b>Vectorize</b><span>entity-name and edge-text, filtered by orgId</span></div>
+          <div class="brick"><b>Workers AI</b><span>one extraction per chunk, then embeddings</span></div>
+          <div class="brick wide"><b>Workflow + cron</b><span>hash → extract → write → embed. Hourly cron applies old + alpha × (rating − old).</span></div>
+        </div>
+      </div>
+      <div class="gap"><span>not a binding</span></div>
+      <div class="shed">
+        <h3>Cognee process</h3>
+        <p class="hint">A Python service with its own disk. A sleeping Container wipes that disk.</p>
+        <div class="bricks" style="grid-template-columns: 1fr">
+          <div class="brick"><b>Kuzu or Neo4j</b><span>the graph</span></div>
+          <div class="brick"><b>LanceDB or Postgres</b><span>the vectors</span></div>
+          <div class="brick"><b>SQLite or Postgres</b><span>the rows</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="write">
+    <p class="plate">02 · remember</p>
+    <h2>Four steps. The model wait is not Worker CPU.</h2>
+    <p class="sub">An unchanged page stops after the hash. D1 is updated before the vectors, so the next read does not wait for the index.</p>
+    <div class="steps">
+      <article class="step skip">
+        <div class="n">01 hash</div>
+        <h3>Same page, stop.</h3>
+        <p>SHA-256 of the Markdown. If D1 already has that hash, nothing is extracted.</p>
+      </article>
+      <article class="step">
+        <div class="n">02 extract</div>
+        <h3>One JSON call.</h3>
+        <p>Split on blank lines. The model returns entities and edges. Waiting on the call is not CPU time.</p>
+      </article>
+      <article class="step">
+        <div class="n">03 write</div>
+        <h3>D1, in one pass.</h3>
+        <p>Normalized name is the id. The phone is an alias row. lives_in and quoted_price point the old row at the new one.</p>
+      </article>
+      <article class="step slow">
+        <div class="n">04 embed</div>
+        <h3>Vectorize, after.</h3>
+        <p>Name vectors and edge vectors. A fresh upsert can take a little while to show up in query. D1 does not wait.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="read">
+    <p class="plate">03 · Two ways to answer</p>
+    <h2>A known phone never waits on the index.</h2>
+    <div class="reads">
+      <div class="read card fast">
+        <h3>She just agreed</h3>
+        <div class="lane">
+          <div class="node"><b>Phone 6591234567</b><span>alias row → mrstan</span></div>
+          <div class="down">↓</div>
+          <div class="node"><b>D1 current edges</b><span>quoted_price 160 is visible on the next query</span></div>
+          <div class="down">↓</div>
+          <div class="node"><b>The other chat</b><span>readCurrent. Vectorize is not on this path.</span></div>
+        </div>
+      </div>
+      <div class="read card slow">
+        <h3>Who in the east wants mornings?</h3>
+        <div class="lane">
+          <div class="node"><b>Vectorize top-K</b><span>entity-name and edge-text, this org only</span></div>
+          <div class="down">↓</div>
+          <div class="node"><b>Triplet score</b><span>sum of three distances, each × (2 − importance)</span></div>
+          <div class="down">↓</div>
+          <div class="node"><b>D1 check</b><span>drop superseded rows. Public audience also drops customers/.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="join">
+    <p class="plate">04 · The question Cognee was for</p>
+    <h2>Tan matches east, mornings, and an open visit.</h2>
+    <div class="graph card">
+      <svg viewBox="0 0 520 240" role="img" aria-label="Tan connected to East, Mornings, and an open visit. Rahman shares only East. Koh is on Bedok.">
+        <line x1="250" y1="78" x2="120" y2="168" stroke="#1d3557" stroke-width="2"/>
+        <line x1="250" y1="78" x2="250" y2="188" stroke="#1d3557" stroke-width="2"/>
+        <line x1="250" y1="78" x2="400" y2="168" stroke="#1d3557" stroke-width="2"/>
+        <line x1="98" y1="168" x2="36" y2="168" stroke="#8d3129" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="250" cy="70" r="28" fill="#d06a1a"/>
+        <circle cx="120" cy="176" r="22" fill="#1d3557"/>
+        <circle cx="250" cy="196" r="22" fill="#1d3557"/>
+        <circle cx="400" cy="176" r="22" fill="#1e5c3d"/>
+        <circle cx="36" cy="176" r="18" fill="#efeae1" stroke="#8d3129"/>
+        <text x="250" y="74" text-anchor="middle" fill="white" font-size="13" font-family="ui-sans-serif, system-ui">Tan</text>
+        <text x="120" y="180" text-anchor="middle" fill="white" font-size="11" font-family="ui-sans-serif, system-ui">East</text>
+        <text x="250" y="200" text-anchor="middle" fill="white" font-size="10" font-family="ui-sans-serif, system-ui">Mornings</text>
+        <text x="400" y="174" text-anchor="middle" fill="white" font-size="11" font-family="ui-sans-serif, system-ui">Visit</text>
+        <text x="400" y="188" text-anchor="middle" fill="white" font-size="10" font-family="ui-sans-serif, system-ui">open</text>
+        <text x="36" y="180" text-anchor="middle" fill="#8d3129" font-size="9" font-family="ui-sans-serif, system-ui">Rahman</text>
+        <text x="150" y="118" fill="#5e584e" font-size="11" font-family="ui-sans-serif, system-ui">lives in</text>
+        <text x="258" y="140" fill="#5e584e" font-size="11" font-family="ui-sans-serif, system-ui">prefers</text>
+        <text x="318" y="118" fill="#5e584e" font-size="11" font-family="ui-sans-serif, system-ui">visit open</text>
+        <text x="36" y="214" text-anchor="middle" fill="#8d3129" font-size="11" font-family="ui-sans-serif, system-ui">visit done</text>
+      </svg>
+      <div>
+        <p class="caption">Each edge is a D1 row. Recall returns the best few triplets. Tan is the entity tied to all three parts of the question. Rahman shares the east, and his visit row says done, so he does not cover the question.</p>
+        <p class="caption">HVAC is not a walk. It is an alias row, hvac → aircon, expanded before the vector query.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="price">
+    <p class="plate">05 · What stays</p>
+    <h2>The old price remains a row. The answer says 160.</h2>
+    <div class="pair">
+      <div class="card">
+        <p class="price old">quoted_price · 180 · superseded_by → 160</p>
+        <p class="price"><b>quoted_price · 160 · current</b></p>
+        <p class="caption">Same person, newer created_at. Nothing is deleted. Recall reloads the row from D1 and drops the superseded one, so a lagged vector cannot bring 180 back.</p>
+      </div>
+      <div class="card">
+        <p><b>Owner</b> sees customers/659….md and wiki/services.md.</p>
+        <p><b>Website</b> is audience public. Every path under customers/ is left out of the candidate list.</p>
+        <p class="caption">The chat’s “she” stays in the chat Durable Object. Cloudnee does not build a second session graph.</p>
+      </div>
+    </div>
+    <table style="margin-top: 14px">
+      <thead><tr><th>Idea</th><th>Binding</th><th>When it is visible</th></tr></thead>
+      <tbody>
+        <tr><td>Editable page</td><td>R2</td><td>As soon as the object is put</td></tr>
+        <tr><td>Phone, edges, old price</td><td>D1</td><td>Next query, including the other chat</td></tr>
+        <tr><td>Fuzzy wording, HVAC</td><td>Vectorize</td><td>After the upsert becomes queryable</td></tr>
+        <tr><td>Used rule beats unused line</td><td>D1 weight, cron</td><td>After improve flushes the queue</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    Diagrams match cloudnee 0.1.0. The nine CoolAir jobs passed against SQLite standing in for D1 and an in-process index standing in for Vectorize. Apache-2.0, LintLabs. Not a Cloudflare or Cognee product.
+  </footer>
+</div>
+</body>
+</html>
