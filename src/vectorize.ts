@@ -35,7 +35,9 @@ export function vectorizeIndex(index: VectorizeLike): VectorIndex {
       if (filter.kind !== undefined) metadata.kind = filter.kind;
       const result = await index.query(values, {
         topK,
-        returnMetadata: "all",
+        // Vectorize caps returnMetadata "all" at topK 50; the wide hit is 100, so return
+        // only indexed metadata (orgId, kind, and the entity/edge id the caller reads back).
+        returnMetadata: "indexed",
         filter: metadata,
       });
       return (result.matches ?? []).map((match) => ({

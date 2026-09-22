@@ -18,6 +18,20 @@ export function sqliteDb(raw: DatabaseSync): SqlDb {
     run(sql, params = []) {
       raw.prepare(sql).run(...(params as (string | number | null | bigint)[]));
     },
+    batch(statements) {
+      raw.exec("BEGIN");
+      try {
+        for (const statement of statements) {
+          raw
+            .prepare(statement.sql)
+            .run(...((statement.params ?? []) as (string | number | null | bigint)[]));
+        }
+        raw.exec("COMMIT");
+      } catch (error) {
+        raw.exec("ROLLBACK");
+        throw error;
+      }
+    },
   };
 }
 

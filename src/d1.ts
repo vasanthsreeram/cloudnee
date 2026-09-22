@@ -12,6 +12,7 @@ export interface D1Like {
       run(): Promise<unknown>;
     };
   };
+  batch?(queries: unknown[]): Promise<unknown>;
 }
 
 export function d1Db(d1: D1Like): SqlDb {
@@ -25,6 +26,15 @@ export function d1Db(d1: D1Like): SqlDb {
     },
     async run(sql: string, params: unknown[] = []): Promise<void> {
       await d1.prepare(sql).bind(...params).run();
+    },
+    async batch(statements: { sql: string; params?: unknown[] }[]): Promise<void> {
+      if (!d1.batch || statements.length === 0) {
+        for (const statement of statements) await this.run(statement.sql, statement.params ?? []);
+        return;
+      }
+      await d1.batch(
+        statements.map((statement) => d1.prepare(statement.sql).bind(...(statement.params ?? []))),
+      );
     },
   };
 }

@@ -4,9 +4,13 @@
 
 # cloudnee
 
-Memory for a Cloudflare Worker. Pages stay Markdown. The graph is D1 rows. Search is a vector candidate list plus a score, not a second database engine.
+Cognee is already a strong memory system. On their published HotPotQA head-to-head their graph scored 0.93 human-like correctness and 0.84 F1, and on BEAM at 100k tokens they report 79% against a Llama-4 RAG baseline of 32.3%. Those numbers are theirs. I wanted that memory, and I wanted it to scale down to zero, not only up.
 
-Cloudnee is an independent implementation of five ideas from [Cognee](https://github.com/topoteretes/cognee) 1.6.0: a stable entity id, one extraction per chunk, triplet ranking, a feedback average, and a permission check. Cognee stores those in Kuzu, LanceDB, and a Python process. Those engines do not run on Workers. The ideas do.
+Cognee keeps the graph in a Python process, on Kuzu or Neo4j and LanceDB. Scale the machine up and it works. Leave it idle and the process is still running, or a container sleeps and the disk is gone. Cloudnee puts the same ideas on Cloudflare bindings that sit still between requests: the page stays Markdown in R2, the graph is D1 rows, search is a Vectorize candidate list plus a score. A Workflow extracts, writes, and exits. Nothing is provisioned while nobody is asking.
+
+The agent that uses it is the [Strands TypeScript SDK](https://github.com/vasanthsreeram/strands-cloudflare) in the same isolate. Try it at [strands.vasanth.cloud](https://strands.vasanth.cloud). This page is [cloudnee.vasanth.cloud](https://cloudnee.vasanth.cloud).
+
+Cloudnee is an independent implementation of five ideas from [Cognee](https://github.com/topoteretes/cognee) 1.6.0: a stable entity id, one extraction per chunk, triplet ranking, a feedback average, and a permission check.
 
 ```
 remember(page)  →  Workflow: hash, extract, write, embed

@@ -7,6 +7,8 @@ export interface SqlDb {
   exec(sql: string): void | Promise<void>;
   all<T = Record<string, unknown>>(sql: string, params?: unknown[]): T[] | Promise<T[]>;
   run(sql: string, params?: unknown[]): void | Promise<void>;
+  /** One atomic group of statements. D1 needs `batch`; interactive BEGIN/COMMIT does not survive across calls. */
+  batch?(statements: { sql: string; params?: unknown[] }[]): void | Promise<void>;
 }
 
 export interface ExtractedEntity {

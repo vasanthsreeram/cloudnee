@@ -5,11 +5,12 @@
   "compatibility_date": "2026-09-21",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
+  "routes": [{ "pattern": "cloudnee.vasanth.cloud", "custom_domain": true }],
   "workflows": [
     { "name": "cloudnee-cognify", "binding": "COGNIFY", "class_name": "CognifyWorkflow" }
   ],
   "d1_databases": [
-    { "binding": "DB", "database_name": "cloudnee", "database_id": "00000000-0000-0000-0000-000000000000" }
+    { "binding": "DB", "database_name": "cloudnee", "database_id": "faa039f0-8285-4cc8-bc4f-eb713a9ab6f1" }
   ],
   "vectorize": [
     { "binding": "ENTITY_INDEX", "index_name": "cloudnee-entity-name" },

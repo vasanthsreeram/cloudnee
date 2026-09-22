@@ -183,28 +183,38 @@ export class SqlGraphStore implements GraphStore {
   }
 
   async replaceEdges(orgId: string, edges: StoredEdge[]): Promise<void> {
+    const inserts = edges.map((edge) => ({
+      sql: INSERT_EDGE,
+      params: [
+        edge.id,
+        edge.orgId,
+        edge.sourceId,
+        edge.sourceName,
+        edge.relation,
+        edge.targetId,
+        edge.targetName,
+        edge.path,
+        edge.chunkId,
+        edge.importance,
+        edge.feedbackWeight,
+        edge.supersededBy === null ? null : edge.supersededBy,
+        edge.createdAt,
+        edge.text,
+      ],
+    }));
+
+    if (this.db.batch) {
+      await Promise.resolve(
+        this.db.batch([{ sql: "DELETE FROM edges WHERE org_id = ?", params: [orgId] }, ...inserts]),
+      );
+      return;
+    }
+
     await Promise.resolve(this.db.exec("BEGIN"));
     try {
       await Promise.resolve(this.db.run("DELETE FROM edges WHERE org_id = ?", [orgId]));
-      for (const edge of edges) {
-        await Promise.resolve(
-          this.db.run(INSERT_EDGE, [
-            edge.id,
-            edge.orgId,
-            edge.sourceId,
-            edge.sourceName,
-            edge.relation,
-            edge.targetId,
-            edge.targetName,
-            edge.path,
-            edge.chunkId,
-            edge.importance,
-            edge.feedbackWeight,
-            edge.supersededBy === null ? null : edge.supersededBy,
-            edge.createdAt,
-            edge.text,
-          ]),
-        );
+      for (const insert of inserts) {
+        await Promise.resolve(this.db.run(insert.sql, insert.params));
       }
       await Promise.resolve(this.db.exec("COMMIT"));
     } catch (error) {

@@ -5,6 +5,8 @@ import { cognifySteps } from "./workflow-steps.ts";
 import { SqlGraphStore } from "./store.ts";
 import { recall, readCurrent, improve, teachAlias, applyPendingFeedback } from "./recall.ts";
 import { parseExtraction, extractionPrompt } from "./extract.ts";
+import { canReadPath } from "./permissions.ts";
+import { siteHtml } from "./site.ts";
 import type {
   Audience,
   CloudneeDeps,
@@ -157,6 +159,11 @@ async function fetch(request: Request, env: Env): Promise<Response> {
   const route = `${request.method} ${url.pathname}`;
 
   if (route === "GET /health") return json({ ok: true, name: "cloudnee" });
+  if (route === "GET /") {
+    return new Response(siteHtml(), {
+      headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" },
+    });
+  }
   if (!isAuthorized(request, env)) return json({ error: "unauthorized" }, 401);
 
   if (route === "POST /v1/remember") {
@@ -206,6 +213,22 @@ async function fetch(request: Request, env: Env): Promise<Response> {
       (url.searchParams.get("audience") ?? undefined) as Audience | undefined,
     );
     return json({ edges });
+  }
+
+  // Read-only dump of one org's graph, for a viewer. Omit `audience` for the owner's view;
+  // pass `public` to drop paths under customers/.
+  if (route === "GET /v1/graph") {
+    const store = new SqlGraphStore(d1Db(env.DB));
+    const orgId = url.searchParams.get("orgId") ?? "";
+    const audience = (url.searchParams.get("audience") ?? undefined) as Audience | undefined;
+    const [entities, edges] = await Promise.all([store.listEntities(orgId), store.listEdges(orgId)]);
+    const visible = audience === undefined ? edges : edges.filter((edge) => canReadPath(edge.path, audience));
+    return json({
+      orgId,
+      entities,
+      edges: visible,
+      counts: { entities: entities.length, edges: visible.length, superseded: visible.filter((edge) => edge.supersededBy !== null).length },
+    });
   }
 
   return json({ error: "not_found" }, 404);
